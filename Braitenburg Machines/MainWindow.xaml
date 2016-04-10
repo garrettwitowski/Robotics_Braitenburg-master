@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="680" Width="850">
     <Grid>
-        <Canvas HorizontalAlignment="Left" Height="600" Margin="0,50,0,0" VerticalAlignment="Top" Width="842" Name="LayoutRoot" MouseDown="LayoutRoot_MouseDown">
+        <Canvas HorizontalAlignment="Left" Height="600" Margin="0,50,0,0" VerticalAlignment="Top" Width="842" Name="LayoutRoot" Background="Transparent" MouseLeftButtonDown="LayoutRoot_MouseLeftButtonDown">
             <Image Height="10" HorizontalAlignment="Left" x:Name="RobotSprite" Stretch="Fill" VerticalAlignment="Top" Width="8" Source="Resources/RobotSprite.bmp" Canvas.Left="148" Canvas.Top="90" />
         </Canvas>
         <CheckBox x:Name="checkBox" Content="Run" HorizontalAlignment="Left" Margin="617,10,0,0" VerticalAlignment="Top" Unchecked="checkBox_Unchecked" Checked="checkBox_Checked"/>

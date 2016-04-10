@@ -56,7 +56,7 @@ namespace Braitenburg_Machines
         public Robot(double Xpos, double Ypos, double Angle, double[,] matrix = null)
         {
             if (!ReferenceEquals(null, matrix))
-                KMatrix = matrix;
+                matrix.CopyTo(KMatrix, 0);
             else {
                 Console.WriteLine("Null Matrix in Constructor!");
                 KMatrix = new double[,]
@@ -109,7 +109,7 @@ namespace Braitenburg_Machines
         //-----------------------
         public void setKMatrix(double[,] matrix)
         {
-            KMatrix = matrix;
+            matrix.CopyTo(KMatrix, 0);
         }
     }
 
@@ -122,11 +122,17 @@ namespace Braitenburg_Machines
         private DispatcherTimer timer; //timer to handle updating the GUI
         private bool running = false;
         private uint numRobots = 1;
-        private ArrayList<>
+        private List<Robot> robots;
+        private List<Image> sprites;
+        private string filename = "../../Resources/robot_data.txt";
+        private const uint SPRITE_WIDTH = 8;
+        private const uint SPRITE_HEIGHT = 10;
 
         public MainWindow()
         {
             InitializeComponent();
+            
+            /*Render the first robot*/
             TransformGroup tg = new TransformGroup();
             RotateTransform rt = new RotateTransform(90);
             tg.Children.Add(rt);
@@ -137,6 +143,69 @@ namespace Braitenburg_Machines
             RobotSprite.RenderTransformOrigin = new Point(0.5, 0.5);
             RobotSprite.RenderTransform = tg;
 
+            /*Open the robot_data file and parse it*/
+            try
+            {   // Open the text file using a stream reader.
+                StreamReader myIFS = new StreamReader(filename.ToString());
+                string line;
+                uint robotCount = 0;
+                if((line = myIFS.ReadLine()) != null)
+                    numRobots = Convert.ToUInt32(line);
+                else
+                {
+                    Console.WriteLine("Error: Invalid file format!");
+                    return;
+                }
+
+                while((line = myIFS.ReadLine()) != null)
+                {
+                    // Read the stream to a string, and write the string to the console
+                    Console.WriteLine(line);
+                    robotCount++;
+                    char[] delims = { ' ' };
+                    var splitLine = line.Split(delims);
+                    double[,] kMatrix = new double[2, 2];
+                    double xPos, yPos, theta;
+                    if (splitLine.Length >= 3)
+                    {
+                        xPos = Convert.ToDouble(splitLine[0]);
+                        yPos = Convert.ToDouble(splitLine[1]);
+                        theta = Convert.ToDouble(splitLine[2]);
+                        if(splitLine.Length >= 7)
+                        {
+                            kMatrix[0, 0] = Convert.ToDouble(splitLine[3]);
+                            kMatrix[0, 1] = Convert.ToDouble(splitLine[4]);
+                            kMatrix[1, 0] = Convert.ToDouble(splitLine[5]);
+                            kMatrix[1, 1] = Convert.ToDouble(splitLine[6]);
+                            robots.Add(new Robot(xPos, yPos, theta, kMatrix));
+                            Image img = new Image();
+                            img.Width = SPRITE_WIDTH;
+                            img.Height = SPRITE_HEIGHT;
+                            img.Name = "RobotSprite" + robotCount;
+                            Canvas.SetTop(img, yPos - img.Height / 2);
+                            Canvas.SetLeft(img, xPos - img.Width / 2);
+                        }
+                        else
+                        {
+                            robots.Add(new Robot(xPos, yPos, theta));
+                        }
+                    }
+                    else Console.WriteLine("Line number {0} has an invalid format!", robotCount + 1);
+                    
+                }
+
+                if (robotCount != numRobots)
+                {
+                    Console.WriteLine("Error: Robot Count does not match number of robots specified!");
+                    return;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("The file could not be read:");
+                Console.WriteLine(e.Message);
+            }
+            
             //create and start the timer to handle the GUI updates
             timer = new DispatcherTimer();
             timer.Interval = TimeSpan.FromMilliseconds(500);
@@ -146,7 +215,7 @@ namespace Braitenburg_Machines
 
         void OnTimedEvent(object sender, EventArgs e)
         {
-            Console.WriteLine("Hello World!");
+            //Console.WriteLine("Hello World!");
             if (running)
             {
                 RobotSprite.RenderTransformOrigin = new Point(0.5, 0.5);
@@ -167,9 +236,12 @@ namespace Braitenburg_Machines
             running = false;
         }
 
-        private void LayoutRoot_MouseDown(object sender, MouseButtonEventArgs e)
+        private void LayoutRoot_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-
+            Console.WriteLine("mouseLeft is clicked");
+            Point x = e.MouseDevice.GetPosition(this);
+            Console.WriteLine(x.X);
+            Console.WriteLine(x.Y);
         }
     }
 }
