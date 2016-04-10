@@ -1,0 +1,15 @@
+﻿<Window x:Class="Braitenburg_Machines.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Braitenburg_Machines"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="680" Width="850">
+    <Grid>
+        <Canvas HorizontalAlignment="Left" Height="600" Margin="0,50,0,0" VerticalAlignment="Top" Width="842" Name="LayoutRoot" MouseDown="LayoutRoot_MouseDown">
+            <Image Height="10" HorizontalAlignment="Left" x:Name="RobotSprite" Stretch="Fill" VerticalAlignment="Top" Width="8" Source="Resources/RobotSprite.bmp" Canvas.Left="148" Canvas.Top="90" />
+        </Canvas>
+        <CheckBox x:Name="checkBox" Content="Run" HorizontalAlignment="Left" Margin="617,10,0,0" VerticalAlignment="Top" Unchecked="checkBox_Unchecked" Checked="checkBox_Checked"/>
+    </Grid>
+</Window>
