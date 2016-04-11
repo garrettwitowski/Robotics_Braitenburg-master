@@ -1,9 +1,9 @@
-﻿ 1) Grid Area
- 2) Add Light Source Button and Click detection
- 3) Grid Array for LightValues
+﻿DONE 1) Grid Area
+DONE 2) Add Light Source Button and Click detection
+DONE 3) Grid Array for Lights
  4) Add Robot
  5) Edit Robot Parameters Options
- 6) Autorun Button
- 7) Robot Calculations
+DONE 6) Autorun Button
+DONE 7) Robot Calculations
  8) Robot Translations on GUI
 DONE 9) Robot Sprite 

@@ -121,17 +121,23 @@ namespace Braitenburg_Machines
     {
         private DispatcherTimer timer; //timer to handle updating the GUI
         private bool running = false;
+        // Robots
         private uint numRobots = 1;
         private List<Robot> robots;
         private List<Image> sprites;
         private string filename = "../../Resources/robot_data.txt";
-        private const uint SPRITE_WIDTH = 8;
-        private const uint SPRITE_HEIGHT = 10;
+        private const uint SPRITE_WIDTH = 9;
+        private const uint SPRITE_HEIGHT = 9;
+        // Lights
+        private bool LightSwitch = false;
+        BitmapImage LightIMG = new BitmapImage(new Uri("../../Resources/LightSource.bmp", UriKind.Relative));
+        Image[] LightList = new Image[300]; // Max of 100 Lights
+        Point[] LightLocs = new Point[300]; // The Positions of those lights
+        int LightCt = 0;
 
         public MainWindow()
         {
             InitializeComponent();
-            
             /*Render the first robot*/
             TransformGroup tg = new TransformGroup();
             RotateTransform rt = new RotateTransform(90);
@@ -208,7 +214,7 @@ namespace Braitenburg_Machines
             
             //create and start the timer to handle the GUI updates
             timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromMilliseconds(500);
+            timer.Interval = TimeSpan.FromMilliseconds(10);
             timer.Tick += OnTimedEvent;
             timer.Start();
         }
@@ -221,7 +227,7 @@ namespace Braitenburg_Machines
                 RobotSprite.RenderTransformOrigin = new Point(0.5, 0.5);
                 TransformGroup tg = RobotSprite.RenderTransform as TransformGroup;
                 RotateTransform rt = tg.Children[0] as RotateTransform;
-                rt.Angle += 30;
+                rt.Angle += 3;
             }
         }
 
@@ -229,19 +235,65 @@ namespace Braitenburg_Machines
         {
             running = true;
             Console.WriteLine("Checkbox Checked!");
+            if (LightSwitch == true)
+            {
+                Lights.IsChecked = false;
+                Lights_Unchecked(sender, e);
+            }
         }
 
         private void checkBox_Unchecked(object sender, RoutedEventArgs e)
         {
+            Console.WriteLine("Checkbox Unchecked.");
             running = false;
         }
 
-        private void LayoutRoot_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void Lights_Checked(object sender, RoutedEventArgs e)
         {
-            Console.WriteLine("mouseLeft is clicked");
-            Point x = e.MouseDevice.GetPosition(this);
-            Console.WriteLine(x.X);
-            Console.WriteLine(x.Y);
+            Console.WriteLine("Lights on.");
+            LightSwitch = true;
+            if (running == true)
+            {
+                checkBox.IsChecked = false;
+                checkBox_Unchecked(sender, e);
+            }
+        }
+
+        private void Lights_Unchecked(object sender, RoutedEventArgs e)
+        {
+            Console.WriteLine("Lights off.");
+            LightSwitch = false;
+        }
+
+        private void LayoutRoot_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (LightSwitch)
+            {
+                //Console.WriteLine("mouseLeft is clicked");
+                Point x = e.MouseDevice.GetPosition(this);
+                //Console.WriteLine(x.X);
+                //Console.WriteLine(x.Y);
+                // Add Image for Light Source
+                if (LightCt < 300)
+                {
+                    LightList[LightCt] = new Image();
+                    LightList[LightCt].Source = LightIMG;
+                    LightList[LightCt].Width = LightIMG.Width;
+                    LightList[LightCt].Height = LightIMG.Height;
+                    Canvas.SetLeft(LightList[LightCt], x.X);
+                    Canvas.SetTop(LightList[LightCt], x.Y - 50);
+                    // Add to Canvas
+                    LayoutRoot.Children.Add(LightList[LightCt]);
+                    // Update Light Locs
+                    LightLocs[LightCt] = new Point(x.X, x.Y);
+                    LightCt += 1;
+                    Console.WriteLine("Light Placed.");
+                }
+                else
+                {
+                    Console.WriteLine("Unable to place more lights.");
+                }
+            }
         }
     }
 }
