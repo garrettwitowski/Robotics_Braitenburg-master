@@ -72,8 +72,8 @@ namespace Braitenburg_Machines
                 Console.WriteLine("Null Matrix in Constructor!");
                 KMatrix = new double[,]
                 {
-                    {1.6, 0.6},
-                    {0.6, 1.6},
+                    {1.1, 0.9},
+                    {0.9, 1.1},
                 };
             }
             position.X = Xpos;
@@ -116,6 +116,7 @@ namespace Braitenburg_Machines
                 double xPrime = Math.Cos(Omega) * (position.X - ICC.X) + -Math.Sin(Omega) * (position.Y - ICC.Y) + ICC.X;
                 double yPrime = Math.Sin(Omega) * (position.X - ICC.X) + Math.Cos(Omega) * (position.Y - ICC.Y) + ICC.Y;
                 double ThetaPrime = Theta + Omega; // Note that we dont actually do anything with this?
+                Console.WriteLine("x': {0} \t y': {1}", xPrime, yPrime);
                 double DX = xPrime - position.X;
                 double DY = yPrime - position.Y;
                 return new Tuple<double, double, double>(DX, DY, Omega);
@@ -126,6 +127,7 @@ namespace Braitenburg_Machines
                 Omega = 0;
                 double xPrime = position.X + Vl * Math.Cos(Theta);
                 double yPrime = position.Y + Vl * Math.Sin(Theta);
+                Console.WriteLine("Sx': {0} \t Sy': {1}", xPrime, yPrime);
                 double DX = xPrime - position.X;
                 double DY = yPrime - position.Y;
                 return new Tuple<double, double, double>(DX, DY, Omega);
@@ -396,6 +398,7 @@ namespace Braitenburg_Machines
                     rt = tg.Children[0] as RotateTransform;
                     tt = tg.Children[1] as TranslateTransform;
                     rt.Angle += deltas.Item3;
+                    tt.X = 0;
                     tt.X += deltas.Item1;
                     //Console.WriteLine("X");
                     //Console.WriteLine(tt.X);
@@ -419,6 +422,7 @@ namespace Braitenburg_Machines
                         Console.WriteLine("NewSum: {0}", robot.Position.X + tt.X);
                         printState = true;
                     }
+                    tt.Y = 0;
                     tt.Y += deltas.Item2;
                     //Console.WriteLine("Y");
                     //Console.WriteLine(tt.Y);
