@@ -73,7 +73,7 @@ namespace Braitenburg_Machines
                 KMatrix = new double[,]
                 {
                     {1.2, 0.8},
-                    {0.8, 1.2},
+                    {-0.8, -1.2},
                 };
             }
             position.X = Xpos;
@@ -116,7 +116,7 @@ namespace Braitenburg_Machines
                 double xPrime = Math.Cos(Omega) * (position.X - ICC.X) + -Math.Sin(Omega) * (position.Y - ICC.Y) + ICC.X;
                 double yPrime = Math.Sin(Omega) * (position.X - ICC.X) + Math.Cos(Omega) * (position.Y - ICC.Y) + ICC.Y;
                 double ThetaPrime = Theta + Omega; // Note that we dont actually do anything with this?
-                Console.WriteLine("x': {0} \t y': {1}", xPrime, yPrime);
+                Console.WriteLine("x'{2}: {0} \t y': {1}", xPrime, yPrime, canvasIndex);
                 double DX = xPrime - position.X;
                 double DY = yPrime - position.Y;
                 return new Tuple<double, double, double>(DX, DY, Omega);
@@ -127,7 +127,7 @@ namespace Braitenburg_Machines
                 Omega = 0;
                 double xPrime = position.X + Vl * Math.Cos(Theta);
                 double yPrime = position.Y + Vl * Math.Sin(Theta);
-                Console.WriteLine("Sx': {0} \t Sy': {1}", xPrime, yPrime);
+                Console.WriteLine("Sx'{2}: {0} \t Sy': {1}", xPrime, yPrime, canvasIndex);
                 double DX = xPrime - position.X;
                 double DY = yPrime - position.Y;
                 return new Tuple<double, double, double>(DX, DY, Omega);
@@ -372,7 +372,6 @@ namespace Braitenburg_Machines
                 RobotSprite.RenderTransformOrigin = new Point(0.5, 0.5);
                 TransformGroup tg = RobotSprite.RenderTransform as TransformGroup;
                 RotateTransform rt = tg.Children[0] as RotateTransform;
-                TranslateTransform tt;
                 rt.Angle += 3;
                 for(int i = 0; i < robots.Count; i++)
                 {
@@ -382,8 +381,8 @@ namespace Braitenburg_Machines
                     sprite.RenderTransformOrigin = new Point(0.5, 0.5);
                     //compute the absolute coordinates of each sensor on the canvas
                     UIElement container = VisualTreeHelper.GetParent(sprite) as UIElement;
-                    Point s1Absolute = sprite.TranslatePoint(new Point(-3, 3), container);
-                    Point s2Absolute = sprite.TranslatePoint(new Point(3, 3), container);
+                    Point s1Absolute = sprite.TranslatePoint(new Point(1, 1), container);
+                    Point s2Absolute = sprite.TranslatePoint(new Point(7, 1), container);
                     //Console.WriteLine("s1Abs: {0} \ts2Abs: {1}", s1Absolute, s2Absolute);
                     //now compute the intensity of the light perceived by each sensor
                     double s1Int = intensityAt(s1Absolute);
@@ -480,7 +479,7 @@ namespace Braitenburg_Machines
                 dist = distance(sensorLoc, LightLocs[i]);
                 if(dist < 1)
                     dist = 1;
-                intensity = 100 / dist;
+                intensity = 100 / (dist);
                 if (intensity > max_intensity)
                     max_intensity = intensity;
             }
