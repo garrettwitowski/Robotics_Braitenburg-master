@@ -115,7 +115,15 @@ namespace Braitenburg_Machines
             var deltas = CalculateStep();
             position.X += deltas.Item1;
             position.Y += deltas.Item2;
-            Theta += deltas.Item3;
+            if (position.X > 842 - 5)
+                position.X = 5;
+            else if (position.X < 5)
+                position.X = 842 - 5;
+            //need to make sure that the rest of these are well-behaved too, so that Theta doesn't ever go beyond
+            //360 degrees or -360 degrees...
+            
+            //if ()
+            Theta = (Theta + deltas.Item3) % 360;
         }
 
         //-----------------------
@@ -358,7 +366,7 @@ namespace Braitenburg_Machines
                     //compute the absolute coordinates of each sensor on the canvas
                     UIElement container = VisualTreeHelper.GetParent(sprite) as UIElement;
                     Point s1Absolute = sprite.TranslatePoint(new Point(1, 1), container);
-                    Point s2Absolute = sprite.TranslatePoint(new Point(1, 7), container);
+                    Point s2Absolute = sprite.TranslatePoint(new Point(7, 1), container);
                     Console.WriteLine("s1Abs: {0} \ts2Abs: {1}", s1Absolute, s2Absolute);
                     //now compute the intensity of the light perceived by each sensor
                     double s1Int = intensityAt(s1Absolute);
@@ -373,7 +381,7 @@ namespace Braitenburg_Machines
                     tg = sprite.RenderTransform as TransformGroup;
                     rt = tg.Children[0] as RotateTransform;
                     tt = tg.Children[1] as TranslateTransform;
-                    rt.Angle += deltas.Item3;
+                    rt.Angle += deltas.Item3 * 180/Math.PI;
                     tt.X += deltas.Item1;
                     tt.Y += deltas.Item2;
                     sprite.RenderTransform = tg;
