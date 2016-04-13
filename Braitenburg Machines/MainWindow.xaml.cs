@@ -66,8 +66,8 @@ namespace Braitenburg_Machines
                 Console.WriteLine("Null Matrix in Constructor!");
                 KMatrix = new double[,]
                 {
-                    {0.6, 0.4},
-                    {0.4, 0.6},
+                    {1.6, 0.6},
+                    {0.6, 1.6},
                 };
             }
             position.X = Xpos;
@@ -97,17 +97,31 @@ namespace Braitenburg_Machines
             double s1 = S[0], s2 = S[1];
             Vl = KMatrix[0, 0] * s1 + KMatrix[0, 1] * s2;
             Vr = KMatrix[1, 0] * s1 + KMatrix[1, 1] * s2;
-            R = ((Vr - Vl) == 0) ? 0 : (Len / 2) * ((Vl + Vr) / (Vr - Vl));
-            Omega = (Vr - Vl) / Len;
-            ICC.X = position.X - R * Math.Sin(Theta);
-            ICC.Y = position.Y - R * Math.Cos(Theta);
+            // Turning
+            if (Vr != Vl)
+            {
+                R = (Len / 2) * ((Vl + Vr) / (Vr - Vl));
+                Omega = ((Vr - Vl) / Len);
+                ICC.X = position.X - R * Math.Sin(Theta);
+                ICC.Y = position.Y - R * Math.Cos(Theta);
 
-            double xPrime = Math.Cos(Omega) * (position.X - ICC.X) + -Math.Sin(Omega) * (position.Y - ICC.Y) + ICC.X;
-            double yPrime = Math.Sin(Omega) * (position.X - ICC.X) + Math.Cos(Omega) * (position.Y - ICC.Y) + ICC.Y;
-            double ThetaPrime = Theta + Omega;
-            double DX = xPrime - position.X;
-            double DY = yPrime - position.Y;
-            return new Tuple<double, double, double>(DX, DY, Omega);
+                double xPrime = Math.Cos(Omega) * (position.X - ICC.X) + -Math.Sin(Omega) * (position.Y - ICC.Y) + ICC.X;
+                double yPrime = Math.Sin(Omega) * (position.X - ICC.X) + Math.Cos(Omega) * (position.Y - ICC.Y) + ICC.Y;
+                double ThetaPrime = Theta + Omega; // Note that we dont actually do anything with this?
+                double DX = xPrime - position.X;
+                double DY = yPrime - position.Y;
+                return new Tuple<double, double, double>(DX, DY, Omega);
+            }
+            // Forward Motion
+            else
+            {
+                Omega = 0;
+                double xPrime = position.X + Vl * Math.Cos(Theta);
+                double yPrime = position.Y + Vl * Math.Sin(Theta);
+                double DX = xPrime - position.X;
+                double DY = yPrime - position.Y;
+                return new Tuple<double, double, double>(DX, DY, Omega);
+            }
         }
 
         public void PerformStep()
@@ -365,9 +379,9 @@ namespace Braitenburg_Machines
                     sprite.RenderTransformOrigin = new Point(0.5, 0.5);
                     //compute the absolute coordinates of each sensor on the canvas
                     UIElement container = VisualTreeHelper.GetParent(sprite) as UIElement;
-                    Point s1Absolute = sprite.TranslatePoint(new Point(1, 1), container);
-                    Point s2Absolute = sprite.TranslatePoint(new Point(7, 1), container);
-                    Console.WriteLine("s1Abs: {0} \ts2Abs: {1}", s1Absolute, s2Absolute);
+                    Point s1Absolute = sprite.TranslatePoint(new Point(-3, 3), container);
+                    Point s2Absolute = sprite.TranslatePoint(new Point(3, 3), container);
+                    //Console.WriteLine("s1Abs: {0} \ts2Abs: {1}", s1Absolute, s2Absolute);
                     //now compute the intensity of the light perceived by each sensor
                     double s1Int = intensityAt(s1Absolute);
                     double s2Int = intensityAt(s2Absolute);
@@ -381,23 +395,49 @@ namespace Braitenburg_Machines
                     tg = sprite.RenderTransform as TransformGroup;
                     rt = tg.Children[0] as RotateTransform;
                     tt = tg.Children[1] as TranslateTransform;
-                    rt.Angle += deltas.Item3 * 180/Math.PI;
+                    rt.Angle += deltas.Item3;
                     tt.X += deltas.Item1;
-                    Console.WriteLine(tt.X);
-                    if (tt.X > 850)
-                        tt.X -= -850;
-                    else if (tt.X < 0)
-                        tt.X += 850;
-                    Console.WriteLine(tt.X);
-                    tt.Y += deltas.Item2;
-                    // Currently doesnt stay within our range. Also note that for some reason, it treats its starting position as 0,0
-                    while (tt.Y > 600 || tt.Y < 0)
+                    //Console.WriteLine("X");
+                    //Console.WriteLine(tt.X);
+                    if ((robot.Position.X + tt.X) > 850)
                     {
-                        if (tt.Y > 600)
-                            tt.X -= -600;
-                        else if (tt.Y < 0)
-                            tt.Y += 600;
+                        Console.WriteLine("-X");
+                        Console.WriteLine(robot.Position.X);
+                        Console.WriteLine(tt.X);
+                        Console.WriteLine(robot.Position.X + tt.X);
+                        tt.X -= 850;
+                        Console.WriteLine(robot.Position.X + tt.X);
+                    }
+                    else if ((robot.Position.X + tt.X) < -50)
+                    {
+                        Console.WriteLine("+X");
+                        Console.WriteLine(robot.Position.X);
+                        Console.WriteLine(tt.X);
+                        Console.WriteLine(robot.Position.X + tt.X);
+                        tt.X += 850;
+                        Console.WriteLine(robot.Position.X + tt.X);
+                    }
+                    tt.Y += deltas.Item2;
+                    //Console.WriteLine("Y");
+                    //Console.WriteLine(tt.Y);
+                    // Currently doesnt stay within our range. Also note that for some reason, it treats its starting position as 0,0
+                    if ((robot.Position.Y + tt.Y) > 550)
+                    {
+                        Console.WriteLine("+Y");
+                        Console.WriteLine(robot.Position.Y);
                         Console.WriteLine(tt.Y);
+                        Console.WriteLine(robot.Position.Y + tt.Y);
+                        tt.X -= 600;
+                        Console.WriteLine(robot.Position.Y + tt.Y);
+                    }
+                    else if ((robot.Position.Y + tt.Y) < -50)
+                    {
+                        Console.WriteLine("-Y");
+                        Console.WriteLine(robot.Position.Y);
+                        Console.WriteLine(tt.Y);
+                        Console.WriteLine(robot.Position.Y + tt.Y);
+                        tt.Y += 600;
+                        Console.WriteLine(robot.Position.Y + tt.Y);
                     }
                     sprite.RenderTransform = tg;
                 }
