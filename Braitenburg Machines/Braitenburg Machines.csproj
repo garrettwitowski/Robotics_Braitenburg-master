@@ -97,12 +97,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="RobotSprite.png" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Resources\RobotSprite.bmp" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Resources\robot_data.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -24,18 +24,21 @@ namespace Braitenburg_Machines
         //-----------------------
         // Data Members
         //-----------------------
-        public Point position, ICC; // (x, y) of Robot center, (x,y) of Instantaneous Center of Curvature
-        double Theta, Rho;      // Pose Angle relative to x axis, Rate of Rotation relative to axle axis
-        double Vr, Vl, R;       // Velocities for Left and Right wheels, dist from midpoint on axle to ICC
-        double[,] KMatrix;
+        private Point position, ICC; // (x, y) of Robot center, (x,y) of Instantaneous Center of Curvature
+        private double Theta, Omega;      // Pose Angle relative to x axis, Rate of Rotation relative to axle axis
+        private double Vr, Vl, R;       // Velocities for Left and Right wheels, dist from midpoint on axle to ICC
+        private double[,] KMatrix;
+        private double s1Intensity, s2Intensity; //intensity values for each sensor
 
         //-----------------------
         // Sprite Variables
         //-----------------------
         // Sensor Positions on sprite, relative to top left as 0,0
-        private Tuple<int, int> S1Pos = Tuple.Create<int, int>(1, 1);
-        private Tuple<int, int> S2Pos = Tuple.Create<int, int>(1, 7);
-        const double Len = 7;   // Dist Between wheels (determined by sprite)
+        //******* MIGHT WANT TO CHANGE THESE TO JUST BE POINTS, TUPLE SHOULDN'T REALLY BE USED HERE BUT IF IT DOESN'T CAUSE PROBLEMS NO NEED TO CHANGE
+        private Point s1Pos = new Point(1, 1);//Tuple.Create<int, int>(1, 1);
+        private Point s2Pos = new Point(1, 7);//Tuple.Create<int, int>(1, 7);
+        private const double Len = 7;   // Dist Between wheels (determined by sprite)
+        private int canvasIndex; //Index of this robot's sprite on the canvas
 
         //-----------------------
         // Constructors 
@@ -52,6 +55,7 @@ namespace Braitenburg_Machines
             ICC.X = 0.0;
             ICC.Y = 0.0;
             Theta = (Math.PI / 2); // Starting pose is sensors facing up. (aka 90 degrees)
+            canvasIndex = -1;
         }
         public Robot(double Xpos, double Ypos, double Angle, double[,] matrix = null)
         {
@@ -69,7 +73,8 @@ namespace Braitenburg_Machines
             position.Y = Ypos;
             ICC.X = 0.0;
             ICC.Y = 0.0;
-            Theta = Angle * (Math.PI / 180); // Starting pose is sensors facing up. (aka 90 degrees)
+            Theta = Angle * (Math.PI / 180); // Starting pose is sensors facing up. (i.e., 90 degrees)
+            canvasIndex = -1;
         }
 
         //-----------------------
@@ -80,28 +85,36 @@ namespace Braitenburg_Machines
         {
             // Should Poll Positions of Sensors for light values.
             // Currently Filler
-            double[] darray = { 1.0, 1.0 };
+            double[] darray = { s1Intensity, s2Intensity};
             return darray;
         }
 
         // Takes in new Sensor Data, then Calculates the change in x, y, and Theta
-        public Tuple<double, double, double> Step()
+        public Tuple<double, double, double> CalculateStep()
         {
             double[] S = FillerSensorRead();
             double s1 = S[0], s2 = S[1];
             Vl = KMatrix[0, 0] * s1 + KMatrix[0, 1] * s2;
             Vr = KMatrix[1, 0] * s1 + KMatrix[1, 1] * s2;
-            R = (Len / 2) * ((Vl + Vr) / (Vr - Vl));
-            Rho = (Vr - Vl) / Len;
+            R = ((Vr - Vl) == 0) ? 0 : (Len / 2) * ((Vl + Vr) / (Vr - Vl));
+            Omega = (Vr - Vl) / Len;
             ICC.X = position.X - R * Math.Sin(Theta);
             ICC.Y = position.Y - R * Math.Cos(Theta);
 
-            double xPrime = Math.Cos(Rho) * (position.X - ICC.X) + -Math.Sin(Rho) * (position.Y - ICC.Y);
-            double yPrime = Math.Sin(Rho) * (position.X - ICC.X) + Math.Cos(Rho) * (position.Y - ICC.Y);
-            double ThetaPrime = Theta + Rho;
-            double DX = position.X - xPrime;
-            double DY = position.Y - yPrime;
-            return new Tuple<double, double, double>(DX, DY, Rho);
+            double xPrime = Math.Cos(Omega) * (position.X - ICC.X) + -Math.Sin(Omega) * (position.Y - ICC.Y) + ICC.X;
+            double yPrime = Math.Sin(Omega) * (position.X - ICC.X) + Math.Cos(Omega) * (position.Y - ICC.Y) + ICC.Y;
+            double ThetaPrime = Theta + Omega;
+            double DX = xPrime - position.X;
+            double DY = yPrime - position.Y;
+            return new Tuple<double, double, double>(DX, DY, Omega);
+        }
+
+        public void PerformStep()
+        {
+            var deltas = CalculateStep();
+            position.X += deltas.Item1;
+            position.Y += deltas.Item2;
+            Theta += deltas.Item3;
         }
 
         //-----------------------
@@ -110,6 +123,78 @@ namespace Braitenburg_Machines
         public void setKMatrix(double[,] matrix)
         {
             matrix.CopyTo(KMatrix, 0);
+        }
+
+        public override string ToString()
+        {
+            var deltas = CalculateStep();
+            return "{" + position.X + ", " + position.Y + ", " + Theta + "} + {" + deltas.Item1 + ", " + deltas.Item2 + ", " + deltas.Item3 + "}";
+        }
+
+        public int CanvasIndex
+        {
+            get
+            {
+                return canvasIndex;
+            }
+            set
+            {
+                canvasIndex = value;
+            }
+        }
+
+        public Point Position
+        {
+            get
+            {
+                return position;
+            }
+            set
+            {
+                position = value;
+            }
+        }
+
+        public Point S1Pos
+        {
+            get
+            {
+                return s1Pos;
+            }
+        }
+
+        public Point S2Pos
+        {
+            get
+            {
+                return s2Pos;
+            }
+        }
+
+        public double S1Intensity
+        {
+            get
+            {
+                return s1Intensity;
+            }
+
+            set
+            {
+                s1Intensity = value;
+            }
+        }
+
+        public double S2Intensity
+        {
+            get
+            {
+                return s2Intensity;
+            }
+
+            set
+            {
+                s2Intensity = value;
+            }
         }
     }
 
@@ -122,32 +207,41 @@ namespace Braitenburg_Machines
         private DispatcherTimer timer; //timer to handle updating the GUI
         private bool running = false;
         // Robots
-        private uint numRobots = 1;
+        private uint numRobots = 0;
         private List<Robot> robots;
-        private List<Image> sprites;
+        //private List<Image> sprites;
         private string filename = "../../Resources/robot_data.txt";
         private const uint SPRITE_WIDTH = 9;
         private const uint SPRITE_HEIGHT = 9;
         // Lights
         private bool LightSwitch = false;
         BitmapImage LightIMG = new BitmapImage(new Uri("../../Resources/LightSource.bmp", UriKind.Relative));
-        Image[] LightList = new Image[300]; // Max of 100 Lights
-        Point[] LightLocs = new Point[300]; // The Positions of those lights
-        int LightCt = 0;
+        BitmapImage robotIMG = new BitmapImage(new Uri("../../Resources/RobotSprite.bmp", UriKind.Relative));
+        //List<Image> LightList;
+        List<Point> LightLocs; // The Positions of the lights
+        private int LightCt = 0;
+        private const int MAX_NUM_LIGHTS = 300;
+        private const int MAX_LIGHT_INTENSITY = 100;
 
         public MainWindow()
         {
             InitializeComponent();
+            robots = new List<Robot>();
+            //LightList = new List<Image>(MAX_NUM_LIGHTS);
+            LightLocs = new List<Point>(MAX_NUM_LIGHTS);
+            //sprites = new List<Image>();
+
             /*Render the first robot*/
             TransformGroup tg = new TransformGroup();
-            RotateTransform rt = new RotateTransform(90);
+            RotateTransform rt = new RotateTransform(0);
             tg.Children.Add(rt);
             TranslateTransform tt = new TranslateTransform();
             tt.X = 0;
             tt.Y = 0;
             tg.Children.Add(tt);
             RobotSprite.RenderTransformOrigin = new Point(0.5, 0.5);
-            RobotSprite.RenderTransform = tg;
+            RobotSprite.RenderTransform = tg; //also might have a problem here...
+            //let's find out what happens by actually running our program... probably just overthinking this...
 
             /*Open the robot_data file and parse it*/
             try
@@ -172,28 +266,50 @@ namespace Braitenburg_Machines
                     var splitLine = line.Split(delims);
                     double[,] kMatrix = new double[2, 2];
                     double xPos, yPos, theta;
+                    tg = new TransformGroup();
+                    rt = new RotateTransform(0);
+                    tt = new TranslateTransform();
+                    tt.X = 0;
+                    tt.Y = 0;
+
                     if (splitLine.Length >= 3)
                     {
                         xPos = Convert.ToDouble(splitLine[0]);
                         yPos = Convert.ToDouble(splitLine[1]);
                         theta = Convert.ToDouble(splitLine[2]);
-                        if(splitLine.Length >= 7)
+                        rt.Angle = theta;
+                        tg.Children.Add(rt);
+                        tg.Children.Add(tt);
+
+                        Image img = new Image();
+                        img.Source = robotIMG;
+                        img.Width = SPRITE_WIDTH;
+                        img.Height = SPRITE_HEIGHT;
+                        img.Name = "RobotSprite" + robotCount;
+                        Canvas.SetTop(img, yPos - (img.Height + 1) / 2);
+                        Canvas.SetLeft(img, xPos - (img.Width + 1) / 2);
+                        img.RenderTransformOrigin = new Point(0.5, 0.5);
+                        img.RenderTransform = tg;
+                        //sprites.Add(img); //probably don't need this, just need to put them on the canvas...
+                        LayoutRoot.Children.Add(img); //this might be a problem because img gets GC'ed at the end of this section
+                        //might instead need to add a new Image to the canvas and update its properties... we shall see...
+                        int spriteLoc = LayoutRoot.Children.Count - 1;
+
+                        if (splitLine.Length >= 7)
                         {
+                            Console.WriteLine("kMatrix provided");
                             kMatrix[0, 0] = Convert.ToDouble(splitLine[3]);
                             kMatrix[0, 1] = Convert.ToDouble(splitLine[4]);
                             kMatrix[1, 0] = Convert.ToDouble(splitLine[5]);
                             kMatrix[1, 1] = Convert.ToDouble(splitLine[6]);
-                            robots.Add(new Robot(xPos, yPos, theta, kMatrix));
-                            Image img = new Image();
-                            img.Width = SPRITE_WIDTH;
-                            img.Height = SPRITE_HEIGHT;
-                            img.Name = "RobotSprite" + robotCount;
-                            Canvas.SetTop(img, yPos - img.Height / 2);
-                            Canvas.SetLeft(img, xPos - img.Width / 2);
+                            robots.Add(new Robot(xPos, yPos, 90 - theta, kMatrix));
+                            robots[robots.Count - 1].CanvasIndex = spriteLoc; //track which robot sprite this robot corresponds to
                         }
                         else
                         {
-                            robots.Add(new Robot(xPos, yPos, theta));
+                            Console.WriteLine("No kMatrix provided");
+                            robots.Add(new Robot(xPos, yPos, 90 - theta));
+                            robots[robots.Count - 1].CanvasIndex = spriteLoc; //track which robot sprite this robot corresponds to
                         }
                     }
                     else Console.WriteLine("Line number {0} has an invalid format!", robotCount + 1);
@@ -205,6 +321,7 @@ namespace Braitenburg_Machines
                     Console.WriteLine("Error: Robot Count does not match number of robots specified!");
                     return;
                 }
+                myIFS.Close(); //Close the file!
             }
             catch (Exception e)
             {
@@ -219,7 +336,7 @@ namespace Braitenburg_Machines
             timer.Start();
         }
 
-        void OnTimedEvent(object sender, EventArgs e)
+        private void OnTimedEvent(object sender, EventArgs e)
         {
             //Console.WriteLine("Hello World!");
             if (running)
@@ -227,17 +344,66 @@ namespace Braitenburg_Machines
                 RobotSprite.RenderTransformOrigin = new Point(0.5, 0.5);
                 TransformGroup tg = RobotSprite.RenderTransform as TransformGroup;
                 RotateTransform rt = tg.Children[0] as RotateTransform;
+                TranslateTransform tt;
                 rt.Angle += 3;
+                for(int i = 0; i < robots.Count; i++)
+                {
+                    Robot robot = robots[i]; //this might not be well defined... not sure...
+                    int idx = robot.CanvasIndex;
+                    var sprite = LayoutRoot.Children[idx];
+                    sprite.RenderTransformOrigin = new Point(0.5, 0.5);
+                    //compute the absolute coordinates of each sensor on the canvas
+                    Point s1Absolute = sprite.TranslatePoint(robots[i].S1Pos, LayoutRoot);
+                    Point s2Absolute = sprite.TranslatePoint(robots[i].S2Pos, LayoutRoot);
+                    Console.WriteLine("s1Abs: {0} \ts2Abs: {1}", s1Absolute, s2Absolute);
+                    //now compute the intensity of the light perceived by each sensor
+                    double s1Int = intensityAt(s1Absolute);
+                    double s2Int = intensityAt(s2Absolute);
+                    //next update the intensity values for each sensor
+                    robot.S1Intensity = s1Int;
+                    robot.S2Intensity = s2Int;
+                    //then calculate the deltas for the step
+                    var deltas = robot.CalculateStep();
+                    //finally, update the pose of both the robot and its sprite
+                    robot.PerformStep();
+                    tg = sprite.RenderTransform as TransformGroup;
+                    rt = tg.Children[0] as RotateTransform;
+                    tt = tg.Children[1] as TranslateTransform;
+                    rt.Angle += deltas.Item3;
+                    tt.X += deltas.Item1;
+                    tt.Y += deltas.Item2;
+                    sprite.RenderTransform = tg;
+                }
             }
         }
 
+        private double distance(Point p1, Point p2)
+        {
+            double dxSquared = Math.Pow((p1.X - p2.X), 2);
+            double dySquared = Math.Pow((p1.Y - p2.Y), 2);
+            return Math.Sqrt(dxSquared + dySquared);
+        }
+
+        private double intensityAt(Point sensorLoc)
+        {
+            double intensity = 0;
+            for(int i = 0; i < LightLocs.Count; i++)
+            {
+                double dist = distance(sensorLoc, LightLocs[i]);
+                if (dist < 1)
+                    intensity += 100;
+                else intensity += 100 / dist;
+            }
+            return intensity;
+        }
+        
         private void checkBox_Checked(object sender, RoutedEventArgs e)
         {
             running = true;
             Console.WriteLine("Checkbox Checked!");
             if (LightSwitch == true)
             {
-                Lights.IsChecked = false;
+                lights.IsChecked = false;
                 Lights_Unchecked(sender, e);
             }
         }
@@ -265,35 +431,33 @@ namespace Braitenburg_Machines
             LightSwitch = false;
         }
 
+        /************ FFV: Add a reset button ***********/
+
         private void LayoutRoot_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (LightSwitch)
+            if (LightSwitch && LightLocs.Count < MAX_NUM_LIGHTS)
             {
                 //Console.WriteLine("mouseLeft is clicked");
-                Point x = e.MouseDevice.GetPosition(this);
+                Point p = e.MouseDevice.GetPosition(this);
                 //Console.WriteLine(x.X);
                 //Console.WriteLine(x.Y);
                 // Add Image for Light Source
-                if (LightCt < 300)
-                {
-                    LightList[LightCt] = new Image();
-                    LightList[LightCt].Source = LightIMG;
-                    LightList[LightCt].Width = LightIMG.Width;
-                    LightList[LightCt].Height = LightIMG.Height;
-                    Canvas.SetLeft(LightList[LightCt], x.X);
-                    Canvas.SetTop(LightList[LightCt], x.Y - 50);
-                    // Add to Canvas
-                    LayoutRoot.Children.Add(LightList[LightCt]);
-                    // Update Light Locs
-                    LightLocs[LightCt] = new Point(x.X, x.Y);
-                    LightCt += 1;
-                    Console.WriteLine("Light Placed.");
-                }
-                else
-                {
-                    Console.WriteLine("Unable to place more lights.");
-                }
+
+                Image img = new Image();
+                img.Source = LightIMG;
+                img.Width = LightIMG.Width;
+                img.Height = LightIMG.Height;
+                Canvas.SetLeft(img, p.X);
+                Canvas.SetTop(img, p.Y - 50);
+                //LightList.Add(img);
+                // Add to Canvas
+                LayoutRoot.Children.Add(img);
+                // Update Light Locs
+                LightLocs.Add(new Point(p.X, p.Y));
+                //LightCt++;
+                Console.WriteLine("Light Placed.");
             }
+            else Console.WriteLine("Unable to place more lights.");
         }
-    }
+    } //end of class MainWindow
 }
