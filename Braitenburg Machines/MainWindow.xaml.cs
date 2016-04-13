@@ -449,7 +449,9 @@ namespace Braitenburg_Machines
                     }
                     Tuple<double, double, double> output = Tuple.Create<double, double, double>(tt.X, tt.Y, deltas.Item3);
                     robot.PerformStep(output);
-                    sprite.RenderTransform = tg;
+                    //sprite.RenderTransform = tg;
+                    Canvas.SetLeft(sprite, robot.Position.X);
+                    Canvas.SetTop(sprite, robot.Position.Y);
                     if (printState)
                     {
                         Console.WriteLine("X: {0}", robot.Position.X);
