@@ -383,7 +383,22 @@ namespace Braitenburg_Machines
                     tt = tg.Children[1] as TranslateTransform;
                     rt.Angle += deltas.Item3 * 180/Math.PI;
                     tt.X += deltas.Item1;
+                    Console.WriteLine(tt.X);
+                    if (tt.X > 850)
+                        tt.X -= -850;
+                    else if (tt.X < 0)
+                        tt.X += 850;
+                    Console.WriteLine(tt.X);
                     tt.Y += deltas.Item2;
+                    // Currently doesnt stay within our range. Also note that for some reason, it treats its starting position as 0,0
+                    while (tt.Y > 600 || tt.Y < 0)
+                    {
+                        if (tt.Y > 600)
+                            tt.X -= -600;
+                        else if (tt.Y < 0)
+                            tt.Y += 600;
+                        Console.WriteLine(tt.Y);
+                    }
                     sprite.RenderTransform = tg;
                 }
             }
