@@ -443,7 +443,8 @@ namespace Braitenburg_Machines
                         Console.WriteLine("NewSum: {0}", robot.Position.Y + tt.Y);
                         printState = true;
                     }
-                    robot.PerformStep(deltas);
+                    Tuple<double, double, double> output = Tuple.Create<double, double, double>(tt.X, tt.Y, deltas.Item3);
+                    robot.PerformStep(output);
                     sprite.RenderTransform = tg;
                     if (printState)
                     {
