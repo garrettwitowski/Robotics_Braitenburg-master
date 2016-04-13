@@ -37,7 +37,6 @@ namespace Braitenburg_Machines
         //******* MIGHT WANT TO CHANGE THESE TO JUST BE POINTS, TUPLE SHOULDN'T REALLY BE USED HERE BUT IF IT DOESN'T CAUSE PROBLEMS NO NEED TO CHANGE
         private Point s1Pos = new Point(1, 1);//Tuple.Create<int, int>(1, 1);
         private Point s2Pos = new Point(7, 1);//Tuple.Create<int, int>(1, 7);
-        // Sensor Positions on sprite, relative to center as 0,0
         private const double Len = 7;   // Dist Between wheels (determined by sprite)
         private int canvasIndex; //Index of this robot's sprite on the canvas
 
@@ -61,7 +60,14 @@ namespace Braitenburg_Machines
         public Robot(double Xpos, double Ypos, double Angle, double[,] matrix = null)
         {
             if (!ReferenceEquals(null, matrix))
-                matrix.CopyTo(KMatrix, 0);
+            {
+                KMatrix = new double[2, 2];
+                //this is not good style but trying to get this done, should use a given function to make a deep copy...
+                KMatrix[0, 0] = matrix[0, 0];
+                KMatrix[0, 1] = matrix[0, 1];
+                KMatrix[1, 0] = matrix[1, 0];
+                KMatrix[1, 1] = matrix[1, 1];
+            }
             else {
                 Console.WriteLine("Null Matrix in Constructor!");
                 KMatrix = new double[,]
@@ -130,10 +136,28 @@ namespace Braitenburg_Machines
         {
             position.X += deltas.Item1;
             position.Y += deltas.Item2;
+<<<<<<< HEAD
             //need to make sure that the rest of these are well-behaved too, so that Theta doesn't ever go beyond
             //360 degrees or -360 degrees...
             
             Theta = (Theta + deltas.Item3) % 360;
+=======
+            Console.WriteLine("X before if stmt: {0}", position.X);
+            if (position.X > 842 - 5)
+                position.X = 5;
+            else if (position.X < 5)
+                position.X = 842 - 5;
+            Console.WriteLine("X after if stmt: {0}", position.X);
+            if (position.Y > 595)
+                position.Y = 5;
+            else if (position.Y < 5)
+                position.Y = 595;
+            //need to make sure that the rest of these are well-behaved too, so that Theta doesn't ever go beyond
+            //360 degrees or -360 degrees...
+            
+            //if ()
+            Theta = (Theta + deltas.Item3) % (2 * Math.PI);
+>>>>>>> origin/master
         }
 
         //-----------------------
@@ -348,6 +372,7 @@ namespace Braitenburg_Machines
             {
                 Console.WriteLine("The file could not be read:");
                 Console.WriteLine(e.Message);
+                Console.WriteLine(e.StackTrace);
             }
             
             //create and start the timer to handle the GUI updates
