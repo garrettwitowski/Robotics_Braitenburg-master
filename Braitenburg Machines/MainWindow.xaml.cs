@@ -36,7 +36,7 @@ namespace Braitenburg_Machines
         // Sensor Positions on sprite, relative to top left as 0,0
         //******* MIGHT WANT TO CHANGE THESE TO JUST BE POINTS, TUPLE SHOULDN'T REALLY BE USED HERE BUT IF IT DOESN'T CAUSE PROBLEMS NO NEED TO CHANGE
         private Point s1Pos = new Point(1, 1);//Tuple.Create<int, int>(1, 1);
-        private Point s2Pos = new Point(1, 7);//Tuple.Create<int, int>(1, 7);
+        private Point s2Pos = new Point(7, 1);//Tuple.Create<int, int>(1, 7);
         private const double Len = 7;   // Dist Between wheels (determined by sprite)
         private int canvasIndex; //Index of this robot's sprite on the canvas
 
@@ -222,6 +222,8 @@ namespace Braitenburg_Machines
         private int LightCt = 0;
         private const int MAX_NUM_LIGHTS = 300;
         private const int MAX_LIGHT_INTENSITY = 100;
+        private Point P1Abs;
+        private Point P2Abs;
 
         public MainWindow()
         {
@@ -353,8 +355,9 @@ namespace Braitenburg_Machines
                     var sprite = LayoutRoot.Children[idx];
                     sprite.RenderTransformOrigin = new Point(0.5, 0.5);
                     //compute the absolute coordinates of each sensor on the canvas
-                    Point s1Absolute = sprite.TranslatePoint(robots[i].S1Pos, LayoutRoot);
-                    Point s2Absolute = sprite.TranslatePoint(robots[i].S2Pos, LayoutRoot);
+                    UIElement container = VisualTreeHelper.GetParent(sprite) as UIElement;
+                    Point s1Absolute = sprite.TranslatePoint(new Point(1, 1), container);
+                    Point s2Absolute = sprite.TranslatePoint(new Point(1, 7), container);
                     Console.WriteLine("s1Abs: {0} \ts2Abs: {1}", s1Absolute, s2Absolute);
                     //now compute the intensity of the light perceived by each sensor
                     double s1Int = intensityAt(s1Absolute);
@@ -393,6 +396,7 @@ namespace Braitenburg_Machines
                 if (dist < 1)
                     intensity += 100;
                 else intensity += 100 / dist;
+                if (intensity > 100) intensity = 100;
             }
             return intensity;
         }
