@@ -33,10 +33,9 @@ namespace Braitenburg_Machines
         //-----------------------
         // Sprite Variables
         //-----------------------
-        // Sensor Positions on sprite, relative to top left as 0,0
-        //******* MIGHT WANT TO CHANGE THESE TO JUST BE POINTS, TUPLE SHOULDN'T REALLY BE USED HERE BUT IF IT DOESN'T CAUSE PROBLEMS NO NEED TO CHANGE
-        private Point s1Pos = new Point(1, 1);//Tuple.Create<int, int>(1, 1);
-        private Point s2Pos = new Point(1, 7);//Tuple.Create<int, int>(1, 7);
+        // Sensor Positions on sprite, relative to center as 0,0
+        private Point s1Pos = new Point(-3, 3);
+        private Point s2Pos = new Point(3, 3);
         private const double Len = 7;   // Dist Between wheels (determined by sprite)
         private int canvasIndex; //Index of this robot's sprite on the canvas
 
@@ -391,8 +390,8 @@ namespace Braitenburg_Machines
             {
                 double dist = distance(sensorLoc, LightLocs[i]);
                 if (dist < 1)
-                    intensity += 100;
-                else intensity += 100 / dist;
+                    intensity = 100;
+                else intensity = Math.Max(intensity, dist);
             }
             return intensity;
         }
