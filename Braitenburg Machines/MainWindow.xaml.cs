@@ -97,6 +97,8 @@ namespace Braitenburg_Machines
             double s1 = S[0], s2 = S[1];
             Vl = KMatrix[0, 0] * s1 + KMatrix[0, 1] * s2;
             Vr = KMatrix[1, 0] * s1 + KMatrix[1, 1] * s2;
+            ICC.X = 0.0;
+            ICC.Y = 0.0;
             // Turning
             if (Vr != Vl)
             {
@@ -124,19 +126,13 @@ namespace Braitenburg_Machines
             }
         }
 
-        public void PerformStep()
+        public void PerformStep(Tuple<double, double, double>  deltas)
         {
-            var deltas = CalculateStep();
             position.X += deltas.Item1;
             position.Y += deltas.Item2;
-            if (position.X > 842 - 5)
-                position.X = 5;
-            else if (position.X < 5)
-                position.X = 842 - 5;
             //need to make sure that the rest of these are well-behaved too, so that Theta doesn't ever go beyond
             //360 degrees or -360 degrees...
             
-            //if ()
             Theta = (Theta + deltas.Item3) % 360;
         }
 
@@ -363,6 +359,7 @@ namespace Braitenburg_Machines
 
         private void OnTimedEvent(object sender, EventArgs e)
         {
+            bool printState = false;
             //Console.WriteLine("Hello World!");
             if (running)
             {
@@ -391,7 +388,6 @@ namespace Braitenburg_Machines
                     //then calculate the deltas for the step
                     var deltas = robot.CalculateStep();
                     //finally, update the pose of both the robot and its sprite
-                    robot.PerformStep();
                     tg = sprite.RenderTransform as TransformGroup;
                     rt = tg.Children[0] as RotateTransform;
                     tt = tg.Children[1] as TranslateTransform;
@@ -399,47 +395,58 @@ namespace Braitenburg_Machines
                     tt.X += deltas.Item1;
                     //Console.WriteLine("X");
                     //Console.WriteLine(tt.X);
-                    if ((robot.Position.X + tt.X) > 850)
+                    if ((robot.Position.X + tt.X) > 842)
                     {
                         Console.WriteLine("-X");
-                        Console.WriteLine(robot.Position.X);
-                        Console.WriteLine(tt.X);
-                        Console.WriteLine(robot.Position.X + tt.X);
-                        tt.X -= 850;
-                        Console.WriteLine(robot.Position.X + tt.X);
+                        Console.WriteLine("Pos: {0}", robot.Position.X);
+                        Console.WriteLine("DX: {0}", tt.X);
+                        Console.WriteLine("Sum: {0}", robot.Position.X + tt.X);
+                        tt.X -= 842;
+                        Console.WriteLine("NewSum: {0}", robot.Position.X + tt.X);
+                        printState = true;
                     }
-                    else if ((robot.Position.X + tt.X) < -50)
+                    else if ((robot.Position.X + tt.X) < 0)
                     {
                         Console.WriteLine("+X");
-                        Console.WriteLine(robot.Position.X);
-                        Console.WriteLine(tt.X);
-                        Console.WriteLine(robot.Position.X + tt.X);
-                        tt.X += 850;
-                        Console.WriteLine(robot.Position.X + tt.X);
+                        Console.WriteLine("Pos: {0}", robot.Position.X);
+                        Console.WriteLine("DX: {0}", tt.X);
+                        Console.WriteLine("Sum: {0}", robot.Position.X + tt.X);
+                        tt.X += 842;
+                        Console.WriteLine("NewSum: {0}", robot.Position.X + tt.X);
+                        printState = true;
                     }
                     tt.Y += deltas.Item2;
                     //Console.WriteLine("Y");
                     //Console.WriteLine(tt.Y);
                     // Currently doesnt stay within our range. Also note that for some reason, it treats its starting position as 0,0
-                    if ((robot.Position.Y + tt.Y) > 550)
+                    if ((robot.Position.Y + tt.Y) > 600)
                     {
                         Console.WriteLine("+Y");
-                        Console.WriteLine(robot.Position.Y);
-                        Console.WriteLine(tt.Y);
-                        Console.WriteLine(robot.Position.Y + tt.Y);
+                        Console.WriteLine("Pos: {0}", robot.Position.Y);
+                        Console.WriteLine("DY: {0}", tt.Y);
+                        Console.WriteLine("Sum: {0}", robot.Position.Y + tt.Y);
                         tt.X -= 600;
-                        Console.WriteLine(robot.Position.Y + tt.Y);
+                        Console.WriteLine("NewSum: {0}", robot.Position.Y + tt.Y);
+                        printState = true;
                     }
-                    else if ((robot.Position.Y + tt.Y) < -50)
+                    else if ((robot.Position.Y + tt.Y) < 0)
                     {
                         Console.WriteLine("-Y");
-                        Console.WriteLine(robot.Position.Y);
-                        Console.WriteLine(tt.Y);
-                        Console.WriteLine(robot.Position.Y + tt.Y);
+                        Console.WriteLine("Pos: {0}", robot.Position.Y);
+                        Console.WriteLine("DY: {0}", tt.Y);
+                        Console.WriteLine("Sum: {0}", robot.Position.Y + tt.Y);
                         tt.Y += 600;
-                        Console.WriteLine(robot.Position.Y + tt.Y);
+                        Console.WriteLine("NewSum: {0}", robot.Position.Y + tt.Y);
+                        printState = true;
                     }
+                    robot.PerformStep(deltas);
                     sprite.RenderTransform = tg;
+                    if (printState)
+                    {
+                        Console.WriteLine("X: {0}", robot.Position.X);
+                        Console.WriteLine("Y: {0}", robot.Position.Y);
+                        printState = false;
+                    }
                 }
             }
         }
