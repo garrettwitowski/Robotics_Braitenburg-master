@@ -136,28 +136,7 @@ namespace Braitenburg_Machines
         {
             position.X += deltas.Item1;
             position.Y += deltas.Item2;
-<<<<<<< HEAD
-            //need to make sure that the rest of these are well-behaved too, so that Theta doesn't ever go beyond
-            //360 degrees or -360 degrees...
-            
-            Theta = (Theta + deltas.Item3) % 360;
-=======
-            Console.WriteLine("X before if stmt: {0}", position.X);
-            if (position.X > 842 - 5)
-                position.X = 5;
-            else if (position.X < 5)
-                position.X = 842 - 5;
-            Console.WriteLine("X after if stmt: {0}", position.X);
-            if (position.Y > 595)
-                position.Y = 5;
-            else if (position.Y < 5)
-                position.Y = 595;
-            //need to make sure that the rest of these are well-behaved too, so that Theta doesn't ever go beyond
-            //360 degrees or -360 degrees...
-            
-            //if ()
             Theta = (Theta + deltas.Item3) % (2 * Math.PI);
->>>>>>> origin/master
         }
 
         //-----------------------
