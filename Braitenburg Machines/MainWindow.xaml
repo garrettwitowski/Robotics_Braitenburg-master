@@ -5,8 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Braitenburg_Machines"
         mc:Ignorable="d"
-        Title="MainWindow" Height="680" Width="850">
+        Title="Starry Night" Height="680" Width="850">
     <Grid>
+        <Rectangle Height="49" Margin="0,0,784,0" VerticalAlignment="Top" Fill="Black"/>
         <Canvas HorizontalAlignment="Left" Height="600" Margin="0,50,0,0" VerticalAlignment="Top" Width="842" Name="LayoutRoot" MouseDown="LayoutRoot_MouseDown" Background="Black">
             <Image Height="27" HorizontalAlignment="Left" x:Name="RobotSprite" Stretch="Fill" VerticalAlignment="Top" Width="27" Source="Resources/RobotSprite.bmp" Canvas.Left="14" Canvas.Top="-40" />
         </Canvas>
