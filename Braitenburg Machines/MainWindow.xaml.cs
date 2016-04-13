@@ -72,8 +72,8 @@ namespace Braitenburg_Machines
                 Console.WriteLine("Null Matrix in Constructor!");
                 KMatrix = new double[,]
                 {
-                    {1.1, 0.9},
-                    {0.9, 1.1},
+                    {1.2, 0.8},
+                    {0.8, 1.2},
                 };
             }
             position.X = Xpos;
@@ -261,10 +261,10 @@ namespace Braitenburg_Machines
             TransformGroup tg = new TransformGroup();
             RotateTransform rt = new RotateTransform(0);
             tg.Children.Add(rt);
-            TranslateTransform tt = new TranslateTransform();
-            tt.X = 0;
-            tt.Y = 0;
-            tg.Children.Add(tt);
+            //TranslateTransform tt = new TranslateTransform();
+            //tt.X = 0;
+            //tt.Y = 0;
+            //tg.Children.Add(tt);
             RobotSprite.RenderTransformOrigin = new Point(0.5, 0.5);
             RobotSprite.RenderTransform = tg; //also might have a problem here...
             //let's find out what happens by actually running our program... probably just overthinking this...
@@ -294,9 +294,9 @@ namespace Braitenburg_Machines
                     double xPos, yPos, theta;
                     tg = new TransformGroup();
                     rt = new RotateTransform(0);
-                    tt = new TranslateTransform();
-                    tt.X = 0;
-                    tt.Y = 0;
+                    //tt = new TranslateTransform();
+                    //tt.X = 0;
+                    //tt.Y = 0;
 
                     if (splitLine.Length >= 3)
                     {
@@ -305,7 +305,7 @@ namespace Braitenburg_Machines
                         theta = Convert.ToDouble(splitLine[2]);
                         rt.Angle = theta;
                         tg.Children.Add(rt);
-                        tg.Children.Add(tt);
+                        //tg.Children.Add(tt);
 
                         Image img = new Image();
                         img.Source = robotIMG;
@@ -396,60 +396,61 @@ namespace Braitenburg_Machines
                     //finally, update the pose of both the robot and its sprite
                     tg = sprite.RenderTransform as TransformGroup;
                     rt = tg.Children[0] as RotateTransform;
-                    tt = tg.Children[1] as TranslateTransform;
+                    //tt = tg.Children[1] as TranslateTransform;
+                    Point ttt = new Point(0,0);
                     rt.Angle += deltas.Item3;
-                    tt.X = 0;
-                    tt.X += deltas.Item1;
+                    ttt.X = 0;
+                    ttt.X += deltas.Item1;
                     //Console.WriteLine("X");
                     //Console.WriteLine(tt.X);
-                    if ((robot.Position.X + tt.X) > 842)
+                    if ((robot.Position.X + ttt.X) > 842)
                     {
                         Console.WriteLine("-X");
                         Console.WriteLine("Pos: {0}", robot.Position.X);
-                        Console.WriteLine("DX: {0}", tt.X);
-                        Console.WriteLine("Sum: {0}", robot.Position.X + tt.X);
-                        tt.X -= 842;
-                        Console.WriteLine("NewSum: {0}", robot.Position.X + tt.X);
+                        Console.WriteLine("DX: {0}", ttt.X);
+                        Console.WriteLine("Sum: {0}", robot.Position.X + ttt.X);
+                        ttt.X -= 842;
+                        Console.WriteLine("NewSum: {0}", robot.Position.X + ttt.X);
                         printState = true;
                     }
-                    else if ((robot.Position.X + tt.X) < 0)
+                    else if ((robot.Position.X + ttt.X) < 0)
                     {
                         Console.WriteLine("+X");
                         Console.WriteLine("Pos: {0}", robot.Position.X);
-                        Console.WriteLine("DX: {0}", tt.X);
-                        Console.WriteLine("Sum: {0}", robot.Position.X + tt.X);
-                        tt.X += 842;
-                        Console.WriteLine("NewSum: {0}", robot.Position.X + tt.X);
+                        Console.WriteLine("DX: {0}", ttt.X);
+                        Console.WriteLine("Sum: {0}", robot.Position.X + ttt.X);
+                        ttt.X += 842;
+                        Console.WriteLine("NewSum: {0}", robot.Position.X + ttt.X);
                         printState = true;
                     }
-                    tt.Y = 0;
-                    tt.Y += deltas.Item2;
+                    ttt.Y = 0;
+                    ttt.Y += deltas.Item2;
                     //Console.WriteLine("Y");
                     //Console.WriteLine(tt.Y);
                     // Currently doesnt stay within our range. Also note that for some reason, it treats its starting position as 0,0
-                    if ((robot.Position.Y + tt.Y) > 600)
+                    if ((robot.Position.Y + ttt.Y) > 600)
                     {
                         Console.WriteLine("+Y");
                         Console.WriteLine("Pos: {0}", robot.Position.Y);
-                        Console.WriteLine("DY: {0}", tt.Y);
-                        Console.WriteLine("Sum: {0}", robot.Position.Y + tt.Y);
-                        tt.X -= 600;
-                        Console.WriteLine("NewSum: {0}", robot.Position.Y + tt.Y);
+                        Console.WriteLine("DY: {0}", ttt.Y);
+                        Console.WriteLine("Sum: {0}", robot.Position.Y + ttt.Y);
+                        ttt.Y -= 600;
+                        Console.WriteLine("NewSum: {0}", robot.Position.Y + ttt.Y);
                         printState = true;
                     }
-                    else if ((robot.Position.Y + tt.Y) < 0)
+                    else if ((robot.Position.Y + ttt.Y) < 0)
                     {
                         Console.WriteLine("-Y");
                         Console.WriteLine("Pos: {0}", robot.Position.Y);
-                        Console.WriteLine("DY: {0}", tt.Y);
-                        Console.WriteLine("Sum: {0}", robot.Position.Y + tt.Y);
-                        tt.Y += 600;
-                        Console.WriteLine("NewSum: {0}", robot.Position.Y + tt.Y);
+                        Console.WriteLine("DY: {0}", ttt.Y);
+                        Console.WriteLine("Sum: {0}", robot.Position.Y + ttt.Y);
+                        ttt.Y += 600;
+                        Console.WriteLine("NewSum: {0}", robot.Position.Y + ttt.Y);
                         printState = true;
                     }
-                    Tuple<double, double, double> output = Tuple.Create<double, double, double>(tt.X, tt.Y, deltas.Item3);
+                    Tuple<double, double, double> output = Tuple.Create<double, double, double>(ttt.X, ttt.Y, deltas.Item3);
                     robot.PerformStep(output);
-                    //sprite.RenderTransform = tg;
+                    sprite.RenderTransform = tg;
                     Canvas.SetLeft(sprite, robot.Position.X);
                     Canvas.SetTop(sprite, robot.Position.Y);
                     if (printState)
